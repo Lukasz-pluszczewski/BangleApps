@@ -54,62 +54,14 @@ exports.get = function() {
 scheduleExpiry(storage.readJSON('weather.json')||{});
 
 exports.drawIcon = function(cond, x, y, r) {
-  var palette;
-  
-  if (B2) {
-    if (g.theme.dark) {
-      palette = {
-        sun: '#FF0',
-        cloud: '#FFF',
-        bgCloud: '#777', // dithers on B2, but that's ok
-        rain: '#0FF',
-        lightning: '#FF0',
-        snow: '#FFF',
-        mist: '#FFF'
-      };
-    } else {
-      palette = {
-        sun: '#FF0',
-        cloud: '#777', // dithers on B2, but that's ok
-        bgCloud: '#000',
-        rain: '#00F',
-        lightning: '#FF0',
-        snow: '#0FF',
-        mist: '#0FF'
-      };
-    }
-  } else {
-    if (g.theme.dark) {
-      palette = {
-        sun: '#FE0',
-        cloud: '#BBB',
-        bgCloud: '#777',
-        rain: '#0CF',
-        lightning: '#FE0',
-        snow: '#FFF',
-        mist: '#FFF'
-      };
-    } else {
-      palette = {
-        sun: '#FC0',
-        cloud: '#000',
-        bgCloud: '#777',
-        rain: '#07F',
-        lightning: '#FC0',
-        snow: '#CCC',
-        mist: '#CCC'
-      };
-    }
-  }
-  
   function drawSun(x, y, r) {
-    g.setColor(palette.sun);
+    g.setColor(B2 ? '#FF0' : (g.theme.dark ? "#FE0" : "#FC0"));
     g.fillCircle(x, y, r);
   }
 
   function drawCloud(x, y, r, c) {
     const u = r/12;
-    if (c==null) c = palette.cloud;
+    if (c==null) c = B2 ? '#FFF': (g.theme.dark ? "#BBB" : "#AAA");
     g.setColor(c);
     g.fillCircle(x-8*u, y+3*u, 4*u);
     g.fillCircle(x-4*u, y-2*u, 5*u);
@@ -126,7 +78,7 @@ exports.drawIcon = function(cond, x, y, r) {
   }
 
   function drawBrokenClouds(x, y, r) {
-    drawCloud(x+1/8*r, y-1/8*r, 7/8*r, palette.bgCloud);
+    drawCloud(x+1/8*r, y-1/8*r, 7/8*r, "#777"); // dithers on B2, but that's ok
     drawCloud(x-1/8*r, y+1/8*r, 7/8*r);
   }
 
@@ -136,7 +88,7 @@ exports.drawIcon = function(cond, x, y, r) {
   }
 
   function drawRainLines(x, y, r) {
-    g.setColor(palette.rain);
+    g.setColor(B2 ? '#0FF' : (g.theme.dark ? "#0CF" : "#07F"));
     const y1 = y+1/2*r;
     const y2 = y+1*r;
     const poly = g.fillPolyAA ? p => g.fillPolyAA(p) : p => g.fillPoly(p);
@@ -172,7 +124,7 @@ exports.drawIcon = function(cond, x, y, r) {
 
   function drawThunderstorm(x, y, r) {
     function drawLightning(x, y, r) {
-      g.setColor(palette.lightning);
+      g.setColor(B2 ? '#FF0' : (g.theme.dark ? "#FE0" : "#FC0"));
       g.fillPoly([
         x-2/6*r, y-r,
         x-4/6*r, y+1/6*r,
@@ -200,7 +152,7 @@ exports.drawIcon = function(cond, x, y, r) {
       }
     }
 
-    g.setColor(palette.snow);
+    g.setColor(B2 ? '#FFF' : (g.theme.dark ? "#FFF" : "#CCC"));
     const w = 1/12*r;
     for(let i = 0; i<=6; ++i) {
       const points = [
@@ -235,7 +187,7 @@ exports.drawIcon = function(cond, x, y, r) {
       [-0.2, 0.3],
     ];
 
-    g.setColor(palette.mist);
+    g.setColor(B2 ? '#FFF' : (g.theme.dark ? "#FFF" : "#CCC"));
     for(let i = 0; i<5; ++i) {
       g.fillRect(x+layers[i][0]*r, y+(0.4*i-0.9)*r, x+layers[i][1]*r,
         y+(0.4*i-0.7)*r-1);
@@ -245,7 +197,7 @@ exports.drawIcon = function(cond, x, y, r) {
   }
 
   function drawUnknown(x, y, r) {
-    drawCloud(x, y, r, palette.bgCloud);
+    drawCloud(x, y, r, "#777"); // dithers on B2, but that's ok
     g.setColor(g.theme.fg).setFontAlign(0, 0).setFont('Vector', r*2).drawString("?", x+r/10, y+r/6);
   }
 

@@ -9,7 +9,7 @@ var layout = new Layout({type:"v", bgCol: g.theme.bg, c: [
   {filly: 1},
   {type: "h", filly: 0, c: [
     {type: "custom", width: g.getWidth()/2, height: g.getWidth()/2, valign: -1, txt: "unknown", id: "icon",
-      render: l => weather.drawIcon(l.txt, l.x+l.w/2, l.y+l.h/2, l.w/2-5)},
+      render: l => console.log('drawingIcon', l.txt) || weather.drawIcon(l.txt, l.x+l.w/2, l.y+l.h/2, l.w/2-5)},
     {type: "v", fillx: 1, c: [
       {type: "h", pad: 2, c: [
         {type: "txt", font: "18%", id: "temp", label: "000"},
@@ -45,8 +45,61 @@ function formatDuration(millis) {
   return pluralize(Math.floor(millis/86400000), "day");
 }
 
+const weatherMappings = {
+  nieznany: 'unknown',
+  burza: 'thunderstorm',
+  'mrożąca mżawka': 'freezing drizzle',
+  'lekka marznąca mżawka': 'slight freezing drizzle',
+  'marznący deszcz': 'freezing rain',
+  'lekki deszcz marznący': 'slight freezing rain',
+  'śnieżne prysznice': 'snow showers',
+  'lekkie opady śniegu': 'slight snow showers',
+  'lekkie opady deszczu i śniegu z domieszką śniegu': 'slight showers of rain and snow mixed',
+  'wyjątkowo silne opady deszczu': 'extremely heavy rain showers',
+  'strugi deszczu': 'rain showers',
+  'niewielki deszcz': 'slight rain showers',
+  'umiarkowane opady śniegu, ciągłe': 'moderate snowfall, continuous',
+  'niewielki opad śniegu, ciągły': 'slight snowfall, continuous',
+  'deszcz i śnieg': 'rain and snow',
+  'niewielki deszcz i śnieg': 'slight rain and snow',
+  'mżawka umiarkowana, ciągła': 'moderate drizzle, continuous',
+  'lekka mżawka, ciągła': 'slight drizzle, continuous',
+  'ulewny deszcz, ciągły': 'heavy rain, continuous',
+  'umiarkowany deszcz, ciągły': 'moderate rain, continuous',
+  'lekki deszcz, ciągły': 'slight rain, continuous',
+  'lodowa mgła': 'ice fog',
+  'mgła': 'fog',
+  'przeważnie pochmurno': 'mostly cloudy',
+  'chmury umiarkowane': 'moderate clouds',
+  targ: 'fair',
+  'opady deszczu i śniegu z domieszką śniegu': 'showers of rain and snow mixed',
+  'obfite opady śniegu, ciągłe': 'heavy snowfall, continuous',
+  'silna mżawka, ciągła': 'heavy drizzle, continuous',
+  'lekko pochmurny': 'slightly cloudy'
+};
+const charFallbacks = {
+  "č":"c",
+  "ř":"r",
+  "ő":"o",
+  "ě":"e",
+  "ę":"e",
+  "ą":"a",
+  "ó":"o",
+  "ż":"z",
+  "ź":"z",
+  "ń":"n",
+  "ł":"l",
+  "ś":"s",
+  "ć":"c",
+};
+
 function draw() {
-  layout.icon.txt = current.txt;
+  const englishCondition = (weatherMappings[current.txt.toLowerCase()] || 'unknown').toLowerCase();
+  const translatedCondition = current.txt.split('').map(letter => console.log('char?', charFallbacks[letter]) || (charFallbacks[letter] || letter)).join('');
+  console.log('translated', translatedCondition);
+  console.log('charFallbacks', charFallbacks);
+  layout.icon.txt = englishCondition;
+  console.log('englishCondition', englishCondition)
   const temp = locale.temp(current.temp-273.15).match(/^(\D*\d*)(.*)$/);
   layout.temp.label = temp[1];
   layout.tempUnit.label = temp[2];
@@ -54,7 +107,7 @@ function draw() {
   const wind = locale.speed(current.wind).match(/^(\D*\d*)(.*)$/);
   layout.wind.label = wind[1];
   layout.windUnit.label = wind[2] + " " + (current.wrose||'').toUpperCase();
-  layout.cond.label = current.txt.charAt(0).toUpperCase()+(current.txt||'').slice(1);
+  layout.cond.label = translatedCondition.charAt(0).toUpperCase()+(translatedCondition||'').slice(1);
   layout.loc.label = current.loc;
   layout.updateTime.label = `${formatDuration(Date.now() - current.time)} ago`;
   layout.update();
